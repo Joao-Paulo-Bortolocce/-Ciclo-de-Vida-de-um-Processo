@@ -3,20 +3,20 @@ struct TpFilaEspera{
 	TpFilaEspera * prox;
 };
 
-TpFilaEspera * initEspera(){
+TpFilaEspera* initEspera(){
 	return NULL;
 }
 
-TpFilaEspera * novoProcessoEspera(TpProcesso p){
-	TpFilaEspera *caixa = new TpFilaPronto;
+TpFilaEspera* novoProcessoEspera(TpProcesso p){
+	TpFilaEspera *caixa = new TpFilaEspera;
 	caixa->PCB=p;
 	caixa->prox=NULL;
 	return caixa;
 }
 
-TpFilaEspera * enqueueEspera (TpFilaEspera *f,TpProcesso p)
+TpFilaEspera* enqueueEspera (TpFilaEspera *f,TpProcesso p)
 {
-	TpFilaEspera *nova = novoProcessoEspera(processo),*aux;
+	TpFilaEspera *nova = novoProcessoEspera(p),*aux;
 	if(f==NULL){
 		f=nova;
 	}
@@ -63,6 +63,6 @@ void exibeEspera (TpFilaEspera *f){
 	TpProcesso p;
 	while(!isEmptyEspera(f)){
 		f = dequeueEspera(f,p);
-		printf("%u\n"p.pid);
+		printf("%u\n",p.pid);
 	}
 }

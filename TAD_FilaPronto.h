@@ -1,5 +1,5 @@
 struct TpProcesso{
-	int qtdFilhos, tRestante, tBloqueado, tTotal;
+	int qtdFilhos, tRestante, tBloqueado, tTotal,prior;
 	pid_t pid,ppid,cpid;
 	char estado; //P=pronto, E=espera, X=executando
 };
