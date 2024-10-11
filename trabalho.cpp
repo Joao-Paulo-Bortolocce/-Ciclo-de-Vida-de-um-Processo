@@ -10,6 +10,10 @@
 #define TFP 10
 #define TFE 4
 
+//função para criar filhos --> FORK(FilaP[TFP],TpProcesso pai, *pids)
+//Função para colocar pai na fila de espera --> PaiToWait(FilaE[TFE],TpProcesso pai);
+
+
 TpProcesso InicializarProcesso(){
 	TpProcesso proc;
 	proc.pid=0;
@@ -81,7 +85,7 @@ void Execucao(TpFilaPronto *FilaP[TFP],	TpFilaEspera *FilaE[TFE],pid_t &pids){
 		ut=0;
 		while(!kbhit()){
 			if(run.tRestante==0){
-				qtdFinalizados=0;
+				qtdFinalizados++;
 				maiorPrior=BuscaMaiorPrioridade(FilaP);
 				if(maiorPrior>0){
 					FilaP[maiorPrior]=DequeuePronto(FilaP[maiorPrior],run);
