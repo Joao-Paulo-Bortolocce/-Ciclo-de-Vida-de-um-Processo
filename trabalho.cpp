@@ -14,6 +14,21 @@
 //função para criar filhos --> FORK(FilaP[TFP],TpProcesso pai, pid_t &pids)
 //Função para colocar pai na fila de espera --> ProntoToWait(FilaE[TFE],TpProcesso pai,int tempoBloqueado);
 
+TpProcesso FORK (FilaP *prontos[],TpProcesso &pai, pid_t &pids){
+	TpProcesso novo;
+	pai.cpid=pids;
+	novo.pid = pids++;
+	novo.ppid=pai.pid;
+	novo.estado='p';
+	novo.tBloqueado=0;
+	novo.tRestante = pai.tRestante;
+	novo.tTotal=0;
+	novo.cpid=0;
+	novo.prior=pai.prior;
+	pai.qtdFilhos++;
+	prontos
+}
+
 int sorteia(){
 	return rand()%100;
 }
@@ -134,7 +149,7 @@ void Execucao(TpFilaPronto *FilaP[TFP],	TpFilaEspera *FilaE[TFE],pid_t &pids){
 			}
 			else{//No momento da troca de contexto o tempo de wait dos outros processos é diminuido?
 				if(flag && sorteia()<3){
-					FORK(FilaP,run, pids);
+					FORK(FilaP,run,pids);
 					run.tBloqueado=0;
 					enqueueEspera(FilaE[0],run);
 					maiorPrior=BuscaMaiorPrioridade(FilaP);
