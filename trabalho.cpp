@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <conio.h>
+#include <conio2.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <windows.h>
@@ -8,7 +8,7 @@
 
 #include "TAD_FilaPronto.h"
 #include "TAD_FilaEspera.h"
-//#include "Interface.h"
+#include "Interface.h"
 
 #define TFP 10
 #define TFE 4
@@ -75,6 +75,7 @@ char RecebeProcessos(TpFilaPronto *FilaP[TFP], pid_t &pids)
 	TpProcesso processo;
 	char op;
 	processo = InicializarProcesso();
+	quadrado(1,1,80,25,14);
 	printf("Digite o tempo de cpu desse processo [1 a 50]: ");
 	scanf("%d", &processo.tRestante);
 	while (processo.tRestante <= 0 || processo.tRestante > 50)
@@ -175,29 +176,97 @@ void incrementaTempoTotal(TpFilaPronto *prontos[TFP], TpFilaEspera *espera[TFE])
 	}
 }
 
-void menuzinho (TpFilaPronto* prontos[TFP],char &flag,pid_t &pids){
+void menuzinho (TpFilaPronto* prontos[TFP],char &flag,pid_t &pids,int &velocidade){
 	char op;
 	TpProcesso novo;
 	system("cls");
+	getch();
+	quadrado(1,1,80,25,14);
+	quadrado(1,20,80,25,14);
 	do{
+		gotoxy(30,2);
 		printf("#### MENU ####\n");
+		gotoxy(2,6);
 		printf("Digite o que deseja:\n");
-		printf("Digite C para criar novos processos");
-		printf("Digite ESC para inicializar o fim do programa");
+		gotoxy(2,7);
+		printf("Digite C para criar novos processos\n");
+		gotoxy(2,8);
+		printf("Digite ESC para inicializar o fim do programa\n");
+		gotoxy(2,9);
+		printf("Digite Seta Cima para aumentar a velocidade de execucao\n");
+		gotoxy(2,10);
+		printf("Digite Seta Baixo para diminuir a velocidade de execucao\n");
+		gotoxy(2,11);
+		printf("Digite BackSpace para retornar a execucao\n");
+		gotoxy(65,4);
+		printf("VELOCIDADE: %d",velocidade);
 		fflush(stdin);
-		op=getch();
+		op=toupper(getch());
+		if(op==-32)
+		op=toupper(getch());
 		switch (op)
 		{
 		case 'C':
 			RecebeProcessos(prontos,pids);
 			break;
-			
+		case 72:
+			if(velocidade<10)
+			{
+				velocidade++;
+				gotoxy(65,4);
+				printf("               ");
+				gotoxy(65,4);
+				printf("VELOCIDADE: %d",velocidade);
+				//reexibir
+			}
+			else
+			{
+				gotoxy(2,21);
+				printf("                                                        ");
+				gotoxy(2,21);
+				printf("Velocidade Maxima Atingida");
+			}
+			break;
+		case 80:
+			if(velocidade>1)
+			{
+				velocidade--;
+				gotoxy(65,4);
+				printf("               ");
+				gotoxy(65,4);
+				printf("VELOCIDADE: %d",velocidade);
+				//reexibir
+			}else
+			{
+				gotoxy(2,21);
+				printf("                                                        ");
+				gotoxy(2,21);
+				printf("Velocidade Minima Atingida");
+			}
+			break;
 		case 27:
 			flag=0;
+			gotoxy(2,21);
+			printf("                                                        ");
+			gotoxy(2,21);
 			printf("Os processos nao criarao mais filhos a partir de agora\n");
 			break;
+		case 8:
+			gotoxy(2,21);
+			printf("                                                        ");
+			gotoxy(2,21);
+			printf("Retornando...\n");
+			Sleep(1000);
+			system("cls");
+			break;
+		default:
+			gotoxy(2,21);
+			printf("                                                        ");
+			gotoxy(2,21);
+			printf("Comando nao reconhecido");
+			break;
 		}
-	}while(op!=27);
+	}while(op!=27 && op!=8);
 }
 
 char ExisteProcesso(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE]){
@@ -235,13 +304,14 @@ void WaitToProntoPai(TpFilaPronto *FilaP[TFP],TpFilaEspera *FilaE[TFE],TpProcess
 void Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], pid_t &pids)
 {
 	char continua = 1, flag = 1;
-	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP), qtdFinalizados = 0;
+	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP), qtdFinalizados = 0,velocidade = 1;
 	TpProcesso run;
 	FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
 	run.estado = 'x';
 	while (continua)
 	{
 		ut = 0;
+		fflush(stdin);
 		while (!kbhit() && continua)
 		{
 			if (run.tRestante == 0)
@@ -329,10 +399,14 @@ void Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], pid_t &pids)
 			run.tRestante--;
 			run.tTotal++;
 			ut++;
-			Sleep(500);
+			Sleep(1100-velocidade*100);
 		}
 		if(flag)
-			menuzinho(FilaP,flag,pids);
+		{
+			fflush(stdin);
+			menuzinho(FilaP,flag,pids,velocidade);
+		}
+			
 	}
 }
 
@@ -343,9 +417,10 @@ int main()
 	InicializarFilasDePronto(FilaP);
 	InicializarFilasDeEspera(FilaE);
 	pid_t pids = 100;
-	printf("Pressione qualquer tecla para criar primeiro processo!!!");
+	//inicioTOP();
 	fflush(stdin);
 	getch();
 	while (RecebeProcessos(FilaP, pids));
+	system("cls");
 	Execucao(FilaP, FilaE, pids);
 }
