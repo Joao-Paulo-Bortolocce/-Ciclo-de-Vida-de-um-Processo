@@ -1,68 +1,77 @@
-struct TpFilaEspera{
+struct TpFilaEspera
+{
 	TpProcesso PCB;
-	TpFilaEspera * prox;
+	TpFilaEspera *prox;
 };
 
-TpFilaEspera* initEspera(){
+TpFilaEspera *initEspera()
+{
 	return NULL;
 }
 
-TpFilaEspera* novoProcessoEspera(TpProcesso p){
+TpFilaEspera *novoProcessoEspera(TpProcesso p)
+{
 	TpFilaEspera *caixa = new TpFilaEspera;
-	caixa->PCB=p;
-	caixa->prox=NULL;
+	caixa->PCB = p;
+	caixa->prox = NULL;
 	return caixa;
 }
 
-TpFilaEspera* enqueueEspera (TpFilaEspera *f,TpProcesso p)
+TpFilaEspera *enqueueEspera(TpFilaEspera *f, TpProcesso p)
 {
-	TpFilaEspera *nova = novoProcessoEspera(p),*aux;
-	if(f==NULL){
-		f=nova;
+	TpFilaEspera *nova = novoProcessoEspera(p), *aux;
+	if (f == NULL)
+	{
+		f = nova;
 	}
 	else
 	{
-		aux=f;
-		while(aux->prox!=NULL)
-			aux=aux->prox;
-			
-		aux->prox=nova;
+		aux = f;
+		while (aux->prox != NULL)
+			aux = aux->prox;
+
+		aux->prox = nova;
 	}
 	return f;
 }
-TpFilaEspera * dequeueEspera (TpFilaEspera *f,TpProcesso &p){
+TpFilaEspera *dequeueEspera(TpFilaEspera *f, TpProcesso &p)
+{
 	TpFilaEspera *aux;
-	aux=f;
-	p=f->PCB;
-	if(f->prox==NULL){
+	aux = f;
+	p = f->PCB;
+	if (f->prox == NULL)
+	{
 		delete aux;
 		return NULL;
 	}
 	else
 	{
-		f=f->prox;
+		f = f->prox;
 		delete aux;
-		return f;	
+		return f;
 	}
 }
 
-char isEmptyEspera (TpFilaEspera *f)
+char isEmptyEspera(TpFilaEspera *f)
 {
 	return f == NULL;
 }
 
-TpProcesso topoEspera (TpFilaEspera * f){
-	if(f!=NULL)
+TpProcesso topoEspera(TpFilaEspera *f)
+{
+	if (f != NULL)
 	{
 		TpProcesso p = f->PCB;
 		return p;
 	}
 }
 
-void exibeEspera (TpFilaEspera *f){
+void exibeEspera(TpFilaEspera *f)
+{
 	TpProcesso p;
-	while(!isEmptyEspera(f)){
-		f = dequeueEspera(f,p);
-		printf("%u\n",p.pid);
+	while (!isEmptyEspera(f))
+	{
+		f = dequeueEspera(f, p);
+		printf("%u\n", p.pid);
 	}
 }
