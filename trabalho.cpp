@@ -331,7 +331,7 @@ void AdicionaTempoBloquado(TpFilaEspera *FilaE[TFE]){
 	 }
 }
 
-int Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], TpFilaTerminado *FilaT,pid_t &pids)
+int Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], TpFilaTerminado &*FilaT,pid_t &pids)
 {
 	char continua = 1, flag = 1;
 	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP), qtdFinalizados = 0,velocidade = 1;
