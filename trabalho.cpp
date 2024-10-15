@@ -8,6 +8,7 @@
 
 #include "TAD_FilaPronto.h"
 #include "TAD_FilaEspera.h"
+#include "TAD_FilaTerminado.h"
 #include "Interface.h"
 
 #define TFP 10
@@ -24,11 +25,15 @@ TpProcesso FORK(TpFilaPronto *prontos[TFP], TpProcesso &pai, pid_t &pids)
 	pai.cpid = pids;
 	novo.pid = pids++;
 	novo.ppid = pai.pid;
+	novo.tBloqueadoTotal=0;
 	novo.estado = 'p';
 	novo.tBloqueado = 0;
-	novo.tRestante = pai.tRestante;
+	novo.tCPU = novo.tRestante = pai.tRestante;
 	novo.tTotal = 0;
 	novo.cpid = 0;
+	novo.bloq=0;
+	novo.tBloqueadoFilho=0;
+	novo.qtdFilhos=0;
 	novo.prior = pai.prior;
 	pai.qtdFilhos++;
 	prontos[novo.prior] = EnqueuePronto(prontos[novo.prior], novo);
@@ -47,11 +52,14 @@ TpProcesso InicializarProcesso()
 	proc.estado = 'p';
 	proc.qtdFilhos = 0;
 	proc.tBloqueado = 0;
+	proc.tBloqueadoTotal=0;
 	proc.tRestante = 0;
+	proc.tCPU=0;
 	proc.tTotal = 0;
 	proc.cpid = 0;
 	proc.prior = 0;
 	proc.tBloqueadoFilho = 0;
+	proc.bloq=0;
 	return proc;
 }
 
@@ -76,19 +84,28 @@ char RecebeProcessos(TpFilaPronto *FilaP[TFP], pid_t &pids)
 	char op;
 	processo = InicializarProcesso();
 	quadrado(1,1,80,25,14);
+	quadrado(1,20,80,25,14);
+	gotoxy(25,2);
+	printf("MENU DE CRIACAO DE PROCESSOS");
+	gotoxy(2,6);
 	printf("Digite o tempo de cpu desse processo [1 a 50]: ");
 	scanf("%d", &processo.tRestante);
+	processo.tCPU = processo.tRestante;
 	while (processo.tRestante <= 0 || processo.tRestante > 50)
 	{
-		printf("Tempo digitado eh invalido, digite o tempo de cpu desse processo [1 a 50]: ");
+		gotoxy(2,6);
+		printf("Tempo digitado invalido, digite o tempo de cpu desse processo [1 a 50]: ");
 		scanf("%d", &processo.tRestante);
 	}
 	processo.pid = pids;
+	processo.bloq=0;
 	pids++;
+	gotoxy(2,7);
 	printf("Digite a prioridade deste processo [0-9]: ");
 	scanf("%d", &processo.prior);
 	processo.prior = processo.prior % 10; // PARA TER CERTEZA QUE O VALOR DA VARIAVEL SERA ENTRE 0 E 9
 	FilaP[processo.prior] = EnqueuePronto(FilaP[processo.prior], processo);
+	gotoxy(2,8);
 	printf("Deseja criar outro processo no momento? S-Sim / N-Nao: ");
 	fflush(stdin);
 	op = toupper(getch());
@@ -97,6 +114,7 @@ char RecebeProcessos(TpFilaPronto *FilaP[TFP], pid_t &pids)
 		fflush(stdin);
 		op = toupper(getch());
 	}
+	system("cls");
 	if (op == 'S')
 		return 1;
 	return 0;
@@ -301,7 +319,19 @@ void WaitToProntoPai(TpFilaPronto *FilaP[TFP],TpFilaEspera *FilaE[TFE],TpProcess
 	}
 }
 
-void Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], pid_t &pids)
+void AdicionaTempoBloquado(TpFilaEspera *FilaE[TFE]){
+	 int i;
+	 TpFilaEspera *aux;
+	 for(i=0;i<TFE;i++){
+	  	aux=FilaE[i];
+	  	while(aux!=NULL){
+	   		aux->PCB.tBloqueadoTotal++;
+	   		aux=aux->prox;
+	  	  }
+	 }
+}
+
+int Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], TpFilaTerminado *FilaT,pid_t &pids)
 {
 	char continua = 1, flag = 1;
 	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP), qtdFinalizados = 0,velocidade = 1;
@@ -317,6 +347,7 @@ void Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], pid_t &pids)
 			if (run.tRestante == 0)
 			{
 				qtdFinalizados++;
+				FilaT = enqueueTerminado(FilaT,run);
 				WaitToProntoPai(FilaP,FilaE,run);
 				if (ExisteProcesso(FilaP,FilaE))
 				{
@@ -354,6 +385,7 @@ void Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], pid_t &pids)
 				if (flag && sorteia() < 3)
 				{
 					FORK(FilaP, run, pids);
+					run.bloq=1;
 					run.tBloqueado = 0;
 					enqueueEspera(FilaE[0], run);
 					maiorPrior = BuscaMaiorPrioridade(FilaP);
@@ -364,6 +396,7 @@ void Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], pid_t &pids)
 				{
 					if (sorteia() < 3)
 					{
+						run.bloq=1;
 						switch (sorteia() % 3 + 1)
 						{
 						case 1: // Fila de mouse
@@ -395,6 +428,7 @@ void Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], pid_t &pids)
 			}
 			incrementaTempoTotal(FilaP,FilaE);
 			DecrementaTempoBloqueado(FilaE);
+			AdicionaTempoBloquado(FilaE);
 			WaitToProntoGeral(FilaE, FilaP);
 			run.tRestante--;
 			run.tTotal++;
@@ -408,19 +442,73 @@ void Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], pid_t &pids)
 		}
 			
 	}
+	return qtdFinalizados;
+}
+
+
+
+void contaBloq(TpFilaTerminado *t,int &val,double &tot){
+	double valor=0;
+	while(t!=NULL){
+		if(t->PCB.bloq)
+		val++;
+		valor+=t->PCB.tBloqueadoTotal;
+		t=t->prox;
+	}
+	tot=valor/tot;
+}
+
+void qntPronto(TpFilaTerminado *t, int &val){
+	while(t!=NULL){
+		if(!t->PCB.bloq && t->PCB.tTotal<t->PCB.tCPU){
+			val++;
+		}
+		t=t->prox;
+	}
+}
+
+void ExibeRelatorios(int qtdFinalizados, TpFilaTerminado * FilaT){
+	int bloq=0,prontos=0,i=11;
+	double medioBloq=0;
+	quadrado(1,1,80,25,14);
+	gotoxy(30,2);
+	printf("RELATORIOS FINAIS");
+	gotoxy(2,6);
+	printf("Quantidade de processos finalizados : %d", qtdFinalizados);
+	contaBloq(FilaT,bloq,medioBloq);
+	gotoxy(2,7);
+	printf("Quantidade de processos bloqueados : %d", bloq);
+	gotoxy(2,8);
+	printf("Media de tempo bloqueado : %.2lf", medioBloq);
+	qntPronto(FilaT,prontos);
+	gotoxy(2,9);
+	printf("Processos entre Execucao e Pronto : %d", prontos);
+	gotoxy(2,10);
+	printf("Relatorios individuais : ");
+	while(FilaT != NULL){
+		gotoxy(2,i++);
+		printf("PID : %d Tempo Total de Execucao: %d",FilaT->PCB.pid,FilaT->PCB.tTotal);
+		gotoxy(2,i++);
+		printf("QTD de Filhos: %d , Tempo Bloqueado Pelos Filhos: %d", FilaT->PCB.qtdFilhos,FilaT->PCB.tBloqueadoFilho);
+		FilaT = FilaT->prox;
+	}
 }
 
 int main()
 {
+	int i;
 	TpFilaPronto *FilaP[TFP];
 	TpFilaEspera *FilaE[TFE];
+	TpFilaTerminado * FilaT;
 	InicializarFilasDePronto(FilaP);
 	InicializarFilasDeEspera(FilaE);
+	FilaT = initTerminado();
 	pid_t pids = 100;
 	//inicioTOP();
 	fflush(stdin);
 	getch();
 	while (RecebeProcessos(FilaP, pids));
 	system("cls");
-	Execucao(FilaP, FilaE, pids);
+	i = Execucao(FilaP,FilaE,FilaT,pids);
+	ExibeRelatorios(i,FilaT);
 }

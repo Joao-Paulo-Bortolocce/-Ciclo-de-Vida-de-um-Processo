@@ -1,8 +1,8 @@
 struct TpProcesso
 {
-	int qtdFilhos, tRestante, tBloqueado, tTotal, prior, tBloqueadoFilho;
-	pid_t pid, ppid, cpid;
-	char estado; // P=pronto, E=espera, X=executando
+	int qtdFilhos, tRestante, tCPU,tBloqueado, tTotal, prior, tBloqueadoFilho;
+	pid_t pid, ppid, cpid, tBloqueadoTotal;
+	char estado,bloq; // P=pronto, E=espera, X=executando
 };
 
 struct TpFilaPronto
