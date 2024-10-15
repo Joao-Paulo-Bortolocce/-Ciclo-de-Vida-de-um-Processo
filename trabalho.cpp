@@ -331,10 +331,10 @@ void AdicionaTempoBloquado(TpFilaEspera *FilaE[TFE]){
 	 }
 }
 
-int Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], TpFilaTerminado *FilaT,pid_t &pids)
+TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], TpFilaTerminado *FilaT,pid_t &pids,int &qtdFinalizados)
 {
 	char continua = 1, flag = 1;
-	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP), qtdFinalizados = 0,velocidade = 1;
+	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP),velocidade = 1;
 	TpProcesso run;
 	FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
 	run.estado = 'x';
@@ -442,7 +442,7 @@ int Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], TpFilaTerminado
 		}
 			
 	}
-	return qtdFinalizados;
+	return FilaT;
 }
 
 
@@ -455,7 +455,16 @@ void contaBloq(TpFilaTerminado *t,int &val,double &tot){
 		valor+=t->PCB.tBloqueadoTotal;
 		t=t->prox;
 	}
-	tot=valor/tot;
+	
+	if(valor==0)
+	{
+		tot=0;
+	}else
+	{
+		tot=valor/val;
+	}
+	
+
 }
 
 void qntPronto(TpFilaTerminado *t, int &val){
@@ -496,7 +505,7 @@ void ExibeRelatorios(int qtdFinalizados, TpFilaTerminado * FilaT){
 
 int main()
 {
-	int i;
+	int i=0;
 	TpFilaPronto *FilaP[TFP];
 	TpFilaEspera *FilaE[TFE];
 	TpFilaTerminado * FilaT;
@@ -509,6 +518,7 @@ int main()
 	getch();
 	while (RecebeProcessos(FilaP, pids));
 	system("cls");
-	i = Execucao(FilaP,FilaE,FilaT,pids);
+	FilaT = Execucao(FilaP,FilaE,FilaT,pids,i);
 	ExibeRelatorios(i,FilaT);
+	gotoxy(1,26);
 }
