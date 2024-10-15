@@ -11,6 +11,7 @@
 #include "TAD_FilaEspera.h"
 #include "TAD_FilaTerminado.h"
 #include "Interface.h"
+#include "capa.h"
 
 #define TFP 10
 #define TFE 4
@@ -353,9 +354,6 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			{
 				qtdFinalizados++;
 				FilaT = enqueueTerminado(FilaT,run);
-				exibeTerminado(FilaT);
-				fflush(stdin);
-				getch();
 				WaitToProntoPai(FilaP,FilaE,run);
 				if (ExisteProcesso(FilaP,FilaE))
 				{
@@ -439,6 +437,7 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			AdicionaTempoBloquado(FilaE);
 			WaitToProntoGeral(FilaE, FilaP);
 			maiorPrior = BuscaMaiorPrioridade(FilaP);
+			drawHeader();displayQueues();
 			if(maiorPrior>run.prior){
 				FilaP[run.prior] = EnqueuePronto(FilaP[run.prior], run);
 				FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
@@ -537,6 +536,7 @@ int main()
 	//inicioTOP();
 	fflush(stdin);
 	getch();
+	Capa();
 	while (RecebeProcessos(FilaP, pids));
 	system("cls");
 	FilaT = Execucao(FilaP,FilaE,FilaT,pids,i);
