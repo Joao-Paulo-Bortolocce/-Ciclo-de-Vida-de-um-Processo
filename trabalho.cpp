@@ -262,12 +262,14 @@ void menuzinho (TpFilaPronto* prontos[TFP],char &flag,pid_t &pids,int &velocidad
 				printf("Velocidade Minima Atingida");
 			}
 			break;
+			
 		case 27:
 			flag=0;
 			gotoxy(2,21);
 			printf("                                                        ");
 			gotoxy(2,21);
 			printf("Os processos nao criarao mais filhos a partir de agora\n");
+			
 			break;
 		case 8:
 			gotoxy(2,21);
@@ -275,7 +277,7 @@ void menuzinho (TpFilaPronto* prontos[TFP],char &flag,pid_t &pids,int &velocidad
 			gotoxy(2,21);
 			printf("Retornando...\n");
 			Sleep(1000);
-			system("cls");
+		
 			break;
 		default:
 			gotoxy(2,21);
@@ -284,7 +286,8 @@ void menuzinho (TpFilaPronto* prontos[TFP],char &flag,pid_t &pids,int &velocidad
 			printf("Comando nao reconhecido");
 			break;
 		}
-	}while(op!=27 && op!=8);
+	}while(op!=8);
+	system("cls");
 }
 
 char ExisteProcesso(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE]){
@@ -334,13 +337,14 @@ void AdicionaTempoBloquado(TpFilaEspera *FilaE[TFE]){
 TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], TpFilaTerminado *FilaT,pid_t &pids,int &qtdFinalizados)
 {
 	char continua = 1, flag = 1;
-	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP),velocidade = 1;
+	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP),velocidade = 10;
 	TpProcesso run;
 	FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
 	run.estado = 'x';
+	ut = 0;
 	while (continua)
 	{
-		ut = 0;
+		
 		fflush(stdin);
 		while (!kbhit() && continua)
 		{
@@ -348,6 +352,9 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			{
 				qtdFinalizados++;
 				FilaT = enqueueTerminado(FilaT,run);
+				exibeTerminado(FilaT);
+				fflush(stdin);
+				getch();
 				WaitToProntoPai(FilaP,FilaE,run);
 				if (ExisteProcesso(FilaP,FilaE))
 				{
@@ -382,7 +389,7 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			}
 			else
 			{ // No momento da troca de contexto o tempo de wait dos outros processos � diminuido?
-				if (flag && sorteia() < 3)
+				if (flag && sorteia() < 10)
 				{
 					FORK(FilaP, run, pids);
 					run.bloq=1;
@@ -433,6 +440,7 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			run.tRestante--;
 			run.tTotal++;
 			ut++;
+			printf("*\n");
 			Sleep(1100-velocidade*100);
 		}
 		if(flag)
@@ -478,6 +486,7 @@ void qntPronto(TpFilaTerminado *t, int &val){
 
 void ExibeRelatorios(int qtdFinalizados, TpFilaTerminado * FilaT){
 	int bloq=0,prontos=0,i=11;
+	TpProcesso p;
 	double medioBloq=0;
 	quadrado(1,1,80,25,14);
 	gotoxy(30,2);
@@ -494,12 +503,12 @@ void ExibeRelatorios(int qtdFinalizados, TpFilaTerminado * FilaT){
 	printf("Processos entre Execucao e Pronto : %d", prontos);
 	gotoxy(2,10);
 	printf("Relatorios individuais : ");
-	while(FilaT != NULL){
+	while(!isEmptyTerminado(FilaT)){
+		FilaT = dequeueTerminado(FilaT,p);
 		gotoxy(2,i++);
-		printf("PID : %d Tempo Total de Execucao: %d",FilaT->PCB.pid,FilaT->PCB.tTotal);
+		printf("PID : %d Tempo Total de Execucao: %d",p.pid,p.tTotal);
 		gotoxy(2,i++);
-		printf("QTD de Filhos: %d , Tempo Bloqueado Pelos Filhos: %d", FilaT->PCB.qtdFilhos,FilaT->PCB.tBloqueadoFilho);
-		FilaT = FilaT->prox;
+		printf("QTD de Filhos: %d , Tempo Bloqueado Pelos Filhos: %d", p.qtdFilhos,p.tBloqueadoFilho);
 	}
 }
 
@@ -508,7 +517,7 @@ int main()
 	int i=0;
 	TpFilaPronto *FilaP[TFP];
 	TpFilaEspera *FilaE[TFE];
-	TpFilaTerminado * FilaT;
+	TpFilaTerminado *FilaT;
 	InicializarFilasDePronto(FilaP);
 	InicializarFilasDeEspera(FilaE);
 	FilaT = initTerminado();
@@ -519,6 +528,8 @@ int main()
 	while (RecebeProcessos(FilaP, pids));
 	system("cls");
 	FilaT = Execucao(FilaP,FilaE,FilaT,pids,i);
+	fflush(stdin);
+	getch();
 	ExibeRelatorios(i,FilaT);
 	gotoxy(1,26);
 }

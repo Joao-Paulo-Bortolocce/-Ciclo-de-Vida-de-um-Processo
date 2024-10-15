@@ -15,7 +15,7 @@ TpFilaTerminado * novoTerminado(TpProcesso p){
 }
 
 TpFilaTerminado * enqueueTerminado(TpFilaTerminado * f, TpProcesso p){
-	TpFilaTerminado *novo = novoTerminado(p), *aux=f,*ant;
+	TpFilaTerminado *novo = novoTerminado(p), *aux=f,*ant=f;
 	if(f==NULL){
 		f=novo;
 	}
@@ -44,3 +44,11 @@ char isEmptyTerminado (TpFilaTerminado *f){
 	return f==NULL;
 }
 
+void exibeTerminado(TpFilaTerminado *f){
+	TpProcesso p;
+	while(f!=NULL){
+		p=f->PCB;
+		printf("PID : %d\n",p.pid);
+		f = f->prox;
+	}
+}
