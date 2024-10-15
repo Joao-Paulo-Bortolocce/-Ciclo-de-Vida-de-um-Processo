@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <conio2.h>
 #include <stdlib.h>
+#include<time.h>
 #include <ctype.h>
 #include <windows.h>
 #include <sys/types.h>
@@ -302,7 +303,7 @@ char ExisteProcesso(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE]){
 }
 
 void WaitToProntoPai(TpFilaPronto *FilaP[TFP],TpFilaEspera *FilaE[TFE],TpProcesso filho){
-	TpFilaEspera *ant,*aux=FilaE[filho.prior];
+	TpFilaEspera *ant,*aux=FilaE[0];
 	TpProcesso pai;
 	ant=aux;
 	while(aux!=NULL && aux->PCB.pid!=filho.ppid){
@@ -310,8 +311,8 @@ void WaitToProntoPai(TpFilaPronto *FilaP[TFP],TpFilaEspera *FilaE[TFE],TpProcess
 		aux=aux->prox;
 	}
 	if(aux!=NULL){
-		if( FilaE[filho.prior]==ant){
-			FilaE[filho.prior]=dequeueEspera(FilaE[filho.prior],pai);
+		if( aux==ant){
+			FilaE[0]=dequeueEspera(FilaE[0],pai);
 			FilaP[pai.prior]=EnqueuePronto(FilaP[pai.prior],pai);
 		}
 		else{
@@ -389,12 +390,12 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			}
 			else
 			{ // No momento da troca de contexto o tempo de wait dos outros processos � diminuido?
-				if (flag && sorteia() < 10)
+				if (flag && sorteia() < 3)
 				{
 					FORK(FilaP, run, pids);
 					run.bloq=1;
 					run.tBloqueado = 0;
-					enqueueEspera(FilaE[0], run);
+					FilaE[0]=enqueueEspera(FilaE[0], run);
 					maiorPrior = BuscaMaiorPrioridade(FilaP);
 					FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
 					ut = 0;
@@ -440,7 +441,6 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			run.tRestante--;
 			run.tTotal++;
 			ut++;
-			printf("*\n");
 			Sleep(1100-velocidade*100);
 		}
 		if(flag)
@@ -515,6 +515,7 @@ void ExibeRelatorios(int qtdFinalizados, TpFilaTerminado * FilaT){
 int main()
 {
 	int i=0;
+	srand(time(NULL));
 	TpFilaPronto *FilaP[TFP];
 	TpFilaEspera *FilaE[TFE];
 	TpFilaTerminado *FilaT;

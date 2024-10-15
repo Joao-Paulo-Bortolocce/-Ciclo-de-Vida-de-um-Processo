@@ -34,8 +34,9 @@ TpFilaTerminado * enqueueTerminado(TpFilaTerminado * f, TpProcesso p){
 
 TpFilaTerminado * dequeueTerminado(TpFilaTerminado *f,TpProcesso &p){
 	TpFilaTerminado *aux = f;
-	f=f->prox;
 	p=f->PCB;
+	f=f->prox;
+	
 	delete aux;
 	return f;
 }
