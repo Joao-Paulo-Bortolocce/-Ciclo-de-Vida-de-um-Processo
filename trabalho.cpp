@@ -438,6 +438,12 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			DecrementaTempoBloqueado(FilaE);
 			AdicionaTempoBloquado(FilaE);
 			WaitToProntoGeral(FilaE, FilaP);
+			maiorPrior = BuscaMaiorPrioridade(FilaP);
+			if(maiorPrior>run.prior){
+				FilaP[run.prior] = EnqueuePronto(FilaP[run.prior], run);
+				FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
+				ut=0;
+			}
 			run.tRestante--;
 			run.tTotal++;
 			ut++;
@@ -448,7 +454,12 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			fflush(stdin);
 			menuzinho(FilaP,flag,pids,velocidade);
 		}
-			
+		maiorPrior = BuscaMaiorPrioridade(FilaP);
+		if(maiorPrior>run.prior){
+			FilaP[run.prior] = EnqueuePronto(FilaP[run.prior], run);
+			FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
+			ut=0;
+		}	
 	}
 	return FilaT;
 }
