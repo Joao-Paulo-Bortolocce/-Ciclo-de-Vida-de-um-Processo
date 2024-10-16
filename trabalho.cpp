@@ -560,9 +560,6 @@ int main()
 	InicializarFilasDeEspera(FilaE);
 	FilaT = initTerminado();
 	pid_t pids = 100;
-	//inicioTOP();
-	fflush(stdin);
-	getch();
 	Capa();
 	while (RecebeProcessos(FilaP, pids));
 	system("cls");
