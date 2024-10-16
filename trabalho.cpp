@@ -343,11 +343,12 @@ void AdicionaTempoBloquado(TpFilaEspera *FilaE[TFE]){
 TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], TpFilaTerminado *FilaT,pid_t &pids,int &qtdFinalizados)
 {
 	char continua = 1, flag = 1;
-	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP),velocidade = 10;
+	int ut, maiorPrior = BuscaMaiorPrioridade(FilaP),velocidade = 5,tempoGeral=0;
 	TpProcesso run;
 	FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
 	run.estado = 'x';
 	ut = 0;
+	displayQueues(FilaP, FilaE, &run,tempoGeral,ut);
 	while (continua)
 	{
 		
@@ -374,6 +375,9 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 					//Fun��o que retira o pai e coloca na fila de pronto, SE ELE TIVER PAI;
 					FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
 					ut = 0;
+					ExibeFilasEspera(FilaE,5,3,4);
+					ExibeFilasPronto(FilaP,30,3,10);
+					drawRunningProcess(84, 10, &run,tempoGeral,ut);
 				}
 				else{
 					continua = 0; // se for -1 quer dizer que todas as filas est�o vazias, portanto pode finalizar a execucao
@@ -387,12 +391,15 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 				{ // Verifica se haver� mudan�a de contexto
 					FilaP[run.prior] = EnqueuePronto(FilaP[run.prior], run);
 					FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
+					ExibeFilasEspera(FilaE,5,3,4);
+					ExibeFilasPronto(FilaP,30,3,10);
+					drawRunningProcess(84, 10, &run,tempoGeral,ut);
 				}
 				ut = 0;
 			}
 			else
 			{ // No momento da troca de contexto o tempo de wait dos outros processos � diminuido?
-				if (flag && sorteia() < 3)
+				if (flag && sorteia() < 8)
 				{
 					FORK(FilaP, run, pids);
 					run.bloq=1;
@@ -401,10 +408,13 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 					maiorPrior = BuscaMaiorPrioridade(FilaP);
 					FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
 					ut = 0;
+					ExibeFilasEspera(FilaE,5,3,4);
+					ExibeFilasPronto(FilaP,30,3,10);
+					drawRunningProcess(84, 10, &run,tempoGeral,ut);
 				}
 				else
 				{
-					if (sorteia() < 3)
+					if (sorteia() < 8)
 					{
 						run.bloq=1;
 						switch (sorteia() % 3 + 1)
@@ -432,11 +442,14 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 						}
 						FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
 						ut = 0;
+						ExibeFilasEspera(FilaE,5,3,4);
+						ExibeFilasPronto(FilaP,30,3,10);
+						drawRunningProcess(84, 10, &run,tempoGeral,ut);
 					}
 					// FUNCIONAMENTO DE DECREMENTO E INCREMENTO DE TODOS OS TEMPOS.
 				}
 			}
-			if(flag){
+			if(continua){
 				incrementaTempoTotal(FilaP,FilaE);
 				DecrementaTempoBloqueado(FilaE);
 				AdicionaTempoBloquado(FilaE);
@@ -450,7 +463,11 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 				run.tRestante--;
 				run.tTotal++;
 				ut++;
-				displayQueues(FilaP, FilaE, &run);
+				ExibeFilasEspera(FilaE,5,3,4);
+				ExibeFilasPronto(FilaP,30,3,10);
+				drawRunningProcess(84, 10, &run,tempoGeral,ut);
+//				//displayQueues(FilaP, FilaE, &run);
+				tempoGeral++;
 				Sleep(1100-velocidade*100);
 			}
 		}
@@ -458,12 +475,13 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 		{
 			fflush(stdin);
 			menuzinho(FilaP,flag,pids,velocidade);
-		}
-		maiorPrior = BuscaMaiorPrioridade(FilaP);
-		if(maiorPrior>run.prior){
-			FilaP[run.prior] = EnqueuePronto(FilaP[run.prior], run);
-			FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
-			ut=0;
+			maiorPrior = BuscaMaiorPrioridade(FilaP);
+			if(maiorPrior>run.prior){
+				FilaP[run.prior] = EnqueuePronto(FilaP[run.prior], run);
+				FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
+				ut=0;
+			}	
+			displayQueues(FilaP, FilaE, &run,tempoGeral,ut);
 		}	
 	}
 	piscarTextoRELATORIO("RELATORIOS", 57,23);

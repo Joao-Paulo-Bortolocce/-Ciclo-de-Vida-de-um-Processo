@@ -38,14 +38,21 @@ TpFilaEspera *enqueueEspera(TpFilaEspera *f, TpProcesso p)
 }
 
 void ExibirEspera(TpFilaEspera *f[TFE], int x, int y){
-	int i;
+	int i,j=y,k;
 	TpFilaEspera *aux;
+	for(i=TFE-1;i>=0;i--,j+=2){
+		gotoxy(x,j);
+		for(k=0;k<15;k++)
+			printf(" ");
+	}
 	for(i=TFE-1;i>=0;i--,y+=2){
 		aux= f[i];
 		gotoxy(x,y);
-		textcolor(i+1);	
+			
 		while(aux!=NULL){
-			printf("%c  ",1);
+			textcolor(aux->PCB.prior);
+			printf("%c",1);
+			aux=aux->prox;
 		}
 	}
 	textcolor(15);

@@ -19,8 +19,13 @@ TpFilaPronto *InitPronto()
 }
 
 void ExibirPronto(TpFilaPronto *f[TFP], int x, int y){
-	int i;
 	TpFilaPronto *aux;
+	int i,j=y,k;
+	for(i=TFP-1;i>=0;i--,j+=2){
+		gotoxy(x,j);
+		for(k=0;k<15;k++)
+			printf("  ");
+	}
 	for(i=TFP-1;i>=0;i--,y+=2){
 		aux= f[i];
 		gotoxy(x,y);

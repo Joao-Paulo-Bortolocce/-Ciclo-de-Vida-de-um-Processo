@@ -84,18 +84,30 @@ void drawQueue(int x, int y, int queueNumber, const char* title, void* queue) {
     */
 }
 
-void drawRunningProcess(int x, int y, TpProcesso* running) {
+void drawRunningProcess(int x, int y, TpProcesso* running, int geral, int ut) {
     textcolor(YELLOW);
     gotoxy(x, y);
     printf("Processo sendo executado:");
     gotoxy(x, y + 1);
     printf("---------------");
     gotoxy(x, y + 2);
+    printf("          ");
+    gotoxy(x, y + 2);
     printf("PID: %d", running->pid);
     gotoxy(x, y + 3);
     printf("Prioridade: %d", running->prior);
     gotoxy(x, y + 4);
+    printf("                    ");
+    gotoxy(x, y + 4);
     printf("Tempo Restante: %d", running->tRestante);
+    gotoxy(x, y + 5);
+    printf("                    ");
+    gotoxy(x, y + 5);
+    printf("Tempo Geral: %d", geral);
+    gotoxy(x, y + 6);
+    printf("                       ");
+    gotoxy(x, y + 6);
+    printf("Fatia de Tempo: %d", ut);
 }
 
 void drawBlockedQueue(int x, int y, const char* title, TpFilaEspera* queue) {
@@ -132,7 +144,9 @@ void ExibeVetores(int x, int y, int qtd){
 		gotoxy(x,y+i);
 		printf("%c",186);
 		gotoxy(x+1,y+i);
+		textcolor(j+1);
 		printf("%d",j);
+		textcolor(15);
 		gotoxy(x+2,y+i);
 		printf("%c",186);
 		i++;
@@ -162,7 +176,7 @@ void ExibeFilasPronto(TpFilaPronto *f[TFP],int x, int y, int qtd){
 	ExibirPronto(f,x+3,y+1);
 }
 
-void displayQueues(TpFilaPronto* FilaP[], TpFilaEspera* FilaE[], TpProcesso* running) {
+void displayQueues(TpFilaPronto* FilaP[], TpFilaEspera* FilaE[], TpProcesso* running, int geral, int ut) {
     int i, startX = 2, startY = 5, j;
     char title[20];
     
@@ -170,7 +184,7 @@ void displayQueues(TpFilaPronto* FilaP[], TpFilaEspera* FilaE[], TpProcesso* run
     
     Bordas(1,1,120,40,MAGENTA);
     textcolor(WHITE);
-    gotoxy(30, 2);
+    gotoxy(48, 2);
     printf("Process Queue Visualization");
 
 	ExibeFilasEspera(FilaE, 5, 3, 4);
@@ -186,7 +200,7 @@ void displayQueues(TpFilaPronto* FilaP[], TpFilaEspera* FilaE[], TpProcesso* run
 //        drawQueue(startX + i * 15, startY + 15, i, title, FilaE[i]);
 //    }
 
-    drawRunningProcess(84, 10, running);
+    drawRunningProcess(84, 10, running,geral,ut);
 }
 
 
