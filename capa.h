@@ -16,96 +16,6 @@ void initializeQueues() {
     }
 }
 
-void enqueue(int queueNum, int value) {
-    if (queues[queueNum].rear == QUEUE_SIZE - 1) {
-        // Queue is full
-        return;
-    }
-    if (queues[queueNum].front == -1) {
-        queues[queueNum].front = 0;
-    }
-    queues[queueNum].rear++;
-    queues[queueNum].items[queues[queueNum].rear] = value;
-}
-
-int dequeue(int queueNum) {
-    if (queues[queueNum].front == -1) {
-        // Queue is empty
-        return -1;
-    }
-    int item = queues[queueNum].items[queues[queueNum].front];
-    queues[queueNum].front++;
-    if (queues[queueNum].front > queues[queueNum].rear) {
-        queues[queueNum].front = queues[queueNum].rear = -1;
-    }
-    return item;
-}
-
-void drawQueue(int x, int y, int queueNumber) {
-    int i;
-    textcolor(WHITE);
-    
-    gotoxy(x, y);
-    printf("%c", 218);
-    for (i = 1; i <= QUEUE_SIZE; i++) {
-        printf("%c%c%c", 196, 196, 196);
-        if (i < QUEUE_SIZE) printf("%c", 194);
-    }
-    printf("%c", 191);
-    
-    gotoxy(x, y + 1);
-    for (i = 0; i <= QUEUE_SIZE; i++) {
-        printf("%c   ", 179);
-    }
-    
-    gotoxy(x, y + 2);
-    printf("%c", 192);
-    for (i = 1; i <= QUEUE_SIZE; i++) {
-        printf("%c%c%c", 196, 196, 196);
-        if (i < QUEUE_SIZE) printf("%c", 193);
-    }
-    printf("%c", 217);
-    
-    gotoxy(x, y + 3);
-    printf("Queue %d", queueNumber + 1);
-}
-
-void displayQueues() {
-    for (int i = 0; i < MAX_QUEUES; i++) {
-        drawQueue(5, 5 + i * 4, i);
-        
-        if (queues[i].front != -1) {
-            for (int j = queues[i].front; j <= queues[i].rear; j++) {
-                gotoxy(6 + j * 4, 6 + i * 4);
-                printf("%2d", queues[i].items[j]);
-            }
-        }
-    }
-}
-
-
-void PintarTela(int corDeFundo){
-	int i, j;
-	for(i=2;i<120;i++){
-		for(j=2; j<30;j++){
-			gotoxy(i,j);
-			textbackground(LIGHTBLUE);
-			printf(" ");
-		}
-	}
-	
-}
-
-void LimpaTela(){
-	int i, j;
-	textbackground(0);
-	for(i=2;i<120;i++)
-		for(j=2;j<30;j++){
-			gotoxy(i,j);
-			printf(" ");
-		}
-}
-
 void Bordas(int ci, int li, int cf, int lf, int corTexto) {
     int i;
     textcolor(corTexto);
@@ -124,7 +34,186 @@ void Bordas(int ci, int li, int cf, int lf, int corTexto) {
     }
 }
 
-void piscarTexto(const char *texto, int x, int y) {
+void drawBorder(int x, int y, int width, int height) {
+    int i;
+    textcolor(WHITE);
+    
+    gotoxy(x, y);
+    printf("%c", 218);
+    for (i = 1; i < width - 1; i++)
+        printf("%c", 196);
+    printf("%c", 191);
+    
+    for (i = 1; i < height - 1; i++) {
+        gotoxy(x, y + i);
+        printf("%c", 179);
+        gotoxy(x + width - 1, y + i);
+        printf("%c", 179);
+    }
+
+    gotoxy(x, y + height - 1);
+    printf("%c", 192);
+    for (i = 1; i < width - 1; i++)
+        printf("%c", 196);
+    printf("%c", 217);
+}
+
+void drawQueue(int x, int y, int queueNumber, const char* title, void* queue) {
+    int i;
+    textcolor(WHITE);
+
+    gotoxy(x, y - 1);
+    cprintf("%s", title);
+
+    for (i = 0; i < QUEUE_SIZE; i++) {
+        gotoxy(x, y + i);
+        cprintf("|    |");
+    }
+    gotoxy(x, y + QUEUE_SIZE);
+    cprintf("------");
+    
+    // Draw queue items (this part needs to be adapted based on your queue structure)
+    // This is just a placeholder, you'll need to implement this based on your actual queue structure
+    /*
+    TpFilaPronto* current = (TpFilaPronto*)queue;
+    for (i = 0; i < QUEUE_SIZE && current != NULL; i++) {
+        gotoxy(x + 1, y + i);
+        cprintf("%3d", current->PCB.pid);
+        current = current->prox;
+    }
+    */
+}
+
+void drawRunningProcess(int x, int y, TpProcesso* running) {
+    textcolor(YELLOW);
+    gotoxy(x, y);
+    printf("Processo sendo executado:");
+    gotoxy(x, y + 1);
+    printf("---------------");
+    gotoxy(x, y + 2);
+    printf("PID: %d", running->pid);
+    gotoxy(x, y + 3);
+    printf("Prioridade: %d", running->prior);
+    gotoxy(x, y + 4);
+    printf("Tempo Restante: %d", running->tRestante);
+}
+
+void drawBlockedQueue(int x, int y, const char* title, TpFilaEspera* queue) {
+    int i;
+    int queueWidth = 10;
+    int queueHeight = QUEUE_SIZE + 2;
+    
+    drawBorder(x, y, queueWidth, queueHeight);
+
+    gotoxy(x + (queueWidth - strlen(title)) / 2, y - 1);
+    printf("%s", title);
+
+    TpFilaEspera* current = queue;
+    for (i = 0; i < QUEUE_SIZE; i++) {
+        gotoxy(x + 1, y + queueHeight - 2 - i);
+        if (current != NULL) {
+            printf("%3d", current->PCB.pid);
+            current = current->prox;
+        } else {
+            printf("   ");
+        }
+    }
+}
+void ExibeVetores(int x, int y, int qtd){
+	int i,j;
+	gotoxy(x,y);
+	printf("%c",201);
+	gotoxy(x+1,y);
+	printf("%c",205);
+	gotoxy(x+2,y);
+	printf("%c",187);
+	for (i=1;i<qtd*2;i++){
+		j=qtd-1-(i-1)/2;
+		gotoxy(x,y+i);
+		printf("%c",186);
+		gotoxy(x+1,y+i);
+		printf("%d",j);
+		gotoxy(x+2,y+i);
+		printf("%c",186);
+		i++;
+		gotoxy(x,y+i);
+		printf("%c",204);
+		gotoxy(x+1,y+i);
+		printf("%c",205);
+		gotoxy(x+2,y+i);
+		printf("%c",185);
+	}
+	i--;
+	gotoxy(x,y+i);
+	printf("%c",200);
+	gotoxy(x+1,y+i);
+	printf("%c",205);
+	gotoxy(x+2,y+i);
+	printf("%c",188);
+}
+
+void ExibeFilasEspera(TpFilaEspera *f[TFE],int x, int y, int qtd){
+	ExibeVetores(x,y,qtd);
+	ExibirEspera(f,x+3,y+1);
+}
+
+void ExibeFilasPronto(TpFilaPronto *f[TFP],int x, int y, int qtd){
+	ExibeVetores(x,y,qtd);
+	ExibirPronto(f,x+3,y+1);
+}
+
+void displayQueues(TpFilaPronto* FilaP[], TpFilaEspera* FilaE[], TpProcesso* running) {
+    int i, startX = 2, startY = 5, j;
+    char title[20];
+    
+    clrscr();
+    
+    Bordas(1,1,120,40,MAGENTA);
+    textcolor(WHITE);
+    gotoxy(30, 2);
+    printf("Process Queue Visualization");
+
+	ExibeFilasEspera(FilaE, 5, 3, 4);
+	ExibeFilasPronto(FilaP, 30, 3, 10);
+	
+//    for (i = 0; i < 10; i++) {
+//        sprintf(title, "Ready %d", i);
+//        drawQueue(startX + i * 15, startY, i, title, FilaP[i]);
+//    }
+//    
+//    for (i = 0; i < 4; i++) {
+//        sprintf(title, "Blocked %d", i);
+//        drawQueue(startX + i * 15, startY + 15, i, title, FilaE[i]);
+//    }
+
+    drawRunningProcess(84, 10, running);
+}
+
+
+void PintarTela(int corDeFundo){
+	int i, j;
+	for(i=2;i<120;i++){
+		for(j=2; j<30;j++){
+			gotoxy(i,j);
+			textbackground(LIGHTBLUE);
+			printf(" ");
+		}
+	}
+	
+}
+
+void LimpaTela(){
+	int i, j;
+	textbackground(0);
+	for(i=2;i<140;i++)
+		for(j=2;j<40;j++){
+			gotoxy(i,j);
+			printf(" ");
+		}
+}
+
+
+void piscarTextoENTRAR(char *texto, int x, int y) {
     int visivel = 1;
 
     while (!kbhit()) {  
@@ -142,27 +231,22 @@ void piscarTexto(const char *texto, int x, int y) {
     }
 }
 
-void drawMenu(int selectedOption) {
-    int startY = 7;
-    char *options[] = {"1 - Cria Filho", "2 - Aumenta Velocidade", "3 - Diminui Velocidade", "BACKSPACE - SAIR"};
-    
-    Bordas(70, 5, 110, 11, CYAN);
-    
-    for (int i = 0; i < 4; i++) {
-        gotoxy(72, startY + i);
-        if (i == selectedOption) {
-            textcolor(RED);
-            textbackground(0);
-            printf("> %s", options[i]);
+void piscarTextoRELATORIO(char *texto, int x, int y) {
+    int visivel = 1;
+
+    while (!kbhit()) {  
+        gotoxy(x, y);   
+        if (visivel) {
+            textbackground(7);  
+            textcolor(4);       
+            printf("%s", texto);
         } else {
-            textcolor(CYAN);
-            textbackground(RED);
-            printf("  %s", options[i]);
+            textbackground(7);  
+            printf("          ");   
         }
+        visivel = !visivel;  
+        Sleep(500);          
     }
-    
-    textcolor(WHITE);
-    textbackground(BLACK);
 }
 
 void drawHeader() {
@@ -187,22 +271,24 @@ void drawDeveloperInfo() {
     }
 }
 
+void LimpaFila(int i, int j){
+	int aux;
+	
+	textbackground(0);
+	gotoxy(i,j);
+	for(aux=15;aux>0;aux--)
+		printf(" ");
+}
+
 void Capa(){
 	
 	int i=30, j=7, selectedOption = 0, key;
 	char string[100];
 	FILE *ptr =fopen("NomeTrab.txt", "r+");
-
 	initializeQueues();
-	
-    enqueue(0, 5); enqueue(0, 10); enqueue(0, 15);
-    enqueue(1, 20); enqueue(1, 25);
-    enqueue(2, 30); enqueue(2, 35); enqueue(2, 40);	
-	
 	Bordas(1,1,120,30,MAGENTA); //Coordenadas para capa
 	PintarTela(4);
 	drawDeveloperInfo();
-
 	textcolor(7);
 	fgets(string, 100, ptr);
 	while(!feof(ptr)){
@@ -211,22 +297,9 @@ void Capa(){
 		j++;
 		fgets(string, 100, ptr);
 	}
-	
-	piscarTexto("ENTRAR",57,23);
-	
-	
-	/*gotoxy(60,23);printf("Desenvolvido por:");
-	gotoxy(61,23);printf("Caua Pereira Domingues");
-	gotoxy(62,23);printf("Joao Manuel Oliveira Pereira");
-	gotoxy(63,23);printf("Joao Paulo Saccomani de Freitas Bortolloce");*/
-	
+	piscarTextoENTRAR("ENTRAR",57,23);
 	LimpaTela();
-	//drawHeader();
-    //displayQueues();
-	
 	getche();
-	
-	
 	fclose(ptr);
 	gotoxy(35,30);
 	textbackground(0);

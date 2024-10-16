@@ -1,3 +1,5 @@
+#define TFE 4
+
 struct TpFilaEspera
 {
 	TpProcesso PCB;
@@ -33,6 +35,20 @@ TpFilaEspera *enqueueEspera(TpFilaEspera *f, TpProcesso p)
 		aux->prox = nova;
 	}
 	return f;
+}
+
+void ExibirEspera(TpFilaEspera *f[TFE], int x, int y){
+	int i;
+	TpFilaEspera *aux;
+	for(i=TFE-1;i>=0;i--,y+=2){
+		aux= f[i];
+		gotoxy(x,y);
+		textcolor(i+1);	
+		while(aux!=NULL){
+			printf("%c  ",1);
+		}
+	}
+	textcolor(15);
 }
 TpFilaEspera *dequeueEspera(TpFilaEspera *f, TpProcesso &p)
 {

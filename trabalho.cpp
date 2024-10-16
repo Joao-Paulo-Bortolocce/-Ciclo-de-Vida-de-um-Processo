@@ -85,29 +85,31 @@ char RecebeProcessos(TpFilaPronto *FilaP[TFP], pid_t &pids)
 	TpProcesso processo;
 	char op;
 	processo = InicializarProcesso();
-	quadrado(1,1,80,25,14);
-	quadrado(1,20,80,25,14);
-	gotoxy(25,2);
+	//quadrado(1,1,80,25,14);
+	//quadrado(1,20,80,25,14);
+	Bordas(1,1,120,30,MAGENTA);
+	textcolor(WHITE);
+	gotoxy(48,2);
 	printf("MENU DE CRIACAO DE PROCESSOS");
-	gotoxy(2,6);
+	gotoxy(5,6);
 	printf("Digite o tempo de cpu desse processo [1 a 50]: ");
 	scanf("%d", &processo.tRestante);
 	processo.tCPU = processo.tRestante;
 	while (processo.tRestante <= 0 || processo.tRestante > 50)
 	{
-		gotoxy(2,6);
+		gotoxy(5,6);
 		printf("Tempo digitado invalido, digite o tempo de cpu desse processo [1 a 50]: ");
 		scanf("%d", &processo.tRestante);
 	}
 	processo.pid = pids;
 	processo.bloq=0;
 	pids++;
-	gotoxy(2,7);
+	gotoxy(5,7);
 	printf("Digite a prioridade deste processo [0-9]: ");
 	scanf("%d", &processo.prior);
 	processo.prior = processo.prior % 10; // PARA TER CERTEZA QUE O VALOR DA VARIAVEL SERA ENTRE 0 E 9
 	FilaP[processo.prior] = EnqueuePronto(FilaP[processo.prior], processo);
-	gotoxy(2,8);
+	gotoxy(5,8);
 	printf("Deseja criar outro processo no momento? S-Sim / N-Nao: ");
 	fflush(stdin);
 	op = toupper(getch());
@@ -201,24 +203,26 @@ void menuzinho (TpFilaPronto* prontos[TFP],char &flag,pid_t &pids,int &velocidad
 	TpProcesso novo;
 	system("cls");
 	getch();
-	quadrado(1,1,80,25,14);
-	quadrado(1,20,80,25,14);
+	//quadrado(1,1,80,25,14);
+	//quadrado(1,20,80,25,14);
+	Bordas(1,1,120,30,MAGENTA);
+	textcolor(WHITE);
 	do{
-		gotoxy(30,2);
+		gotoxy(48,2);
 		printf("#### MENU ####\n");
-		gotoxy(2,6);
+		gotoxy(5,6);
 		printf("Digite o que deseja:\n");
-		gotoxy(2,7);
+		gotoxy(5,7);
 		printf("Digite C para criar novos processos\n");
-		gotoxy(2,8);
+		gotoxy(5,8);
 		printf("Digite ESC para inicializar o fim do programa\n");
-		gotoxy(2,9);
+		gotoxy(5,9);
 		printf("Digite Seta Cima para aumentar a velocidade de execucao\n");
-		gotoxy(2,10);
+		gotoxy(5,10);
 		printf("Digite Seta Baixo para diminuir a velocidade de execucao\n");
-		gotoxy(2,11);
+		gotoxy(5,11);
 		printf("Digite BackSpace para retornar a execucao\n");
-		gotoxy(65,4);
+		gotoxy(75,4);
 		printf("VELOCIDADE: %d",velocidade);
 		fflush(stdin);
 		op=toupper(getch());
@@ -233,9 +237,9 @@ void menuzinho (TpFilaPronto* prontos[TFP],char &flag,pid_t &pids,int &velocidad
 			if(velocidade<10)
 			{
 				velocidade++;
-				gotoxy(65,4);
+				gotoxy(75,4);
 				printf("               ");
-				gotoxy(65,4);
+				gotoxy(75,4);
 				printf("VELOCIDADE: %d",velocidade);
 				//reexibir
 			}
@@ -251,9 +255,9 @@ void menuzinho (TpFilaPronto* prontos[TFP],char &flag,pid_t &pids,int &velocidad
 			if(velocidade>1)
 			{
 				velocidade--;
-				gotoxy(65,4);
+				gotoxy(75,4);
 				printf("               ");
-				gotoxy(65,4);
+				gotoxy(75,4);
 				printf("VELOCIDADE: %d",velocidade);
 				//reexibir
 			}else
@@ -432,21 +436,23 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 					// FUNCIONAMENTO DE DECREMENTO E INCREMENTO DE TODOS OS TEMPOS.
 				}
 			}
-			incrementaTempoTotal(FilaP,FilaE);
-			DecrementaTempoBloqueado(FilaE);
-			AdicionaTempoBloquado(FilaE);
-			WaitToProntoGeral(FilaE, FilaP);
-			maiorPrior = BuscaMaiorPrioridade(FilaP);
-			drawHeader();displayQueues();
-			if(maiorPrior>run.prior){
-				FilaP[run.prior] = EnqueuePronto(FilaP[run.prior], run);
-				FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
-				ut=0;
+			if(flag){
+				incrementaTempoTotal(FilaP,FilaE);
+				DecrementaTempoBloqueado(FilaE);
+				AdicionaTempoBloquado(FilaE);
+				WaitToProntoGeral(FilaE, FilaP);
+				maiorPrior = BuscaMaiorPrioridade(FilaP);
+				if(maiorPrior>run.prior){
+					FilaP[run.prior] = EnqueuePronto(FilaP[run.prior], run);
+					FilaP[maiorPrior] = DequeuePronto(FilaP[maiorPrior], run);
+					ut=0;
+				}
+				run.tRestante--;
+				run.tTotal++;
+				ut++;
+				displayQueues(FilaP, FilaE, &run);
+				Sleep(1100-velocidade*100);
 			}
-			run.tRestante--;
-			run.tTotal++;
-			ut++;
-			Sleep(1100-velocidade*100);
 		}
 		if(flag)
 		{
@@ -460,10 +466,11 @@ TpFilaTerminado *  Execucao(TpFilaPronto *FilaP[TFP], TpFilaEspera *FilaE[TFE], 
 			ut=0;
 		}	
 	}
+	piscarTextoRELATORIO("RELATORIOS", 57,23);
+	getch();
+	LimpaTela();
 	return FilaT;
 }
-
-
 
 void contaBloq(TpFilaTerminado *t,int &val,double &tot){
 	double valor=0;
@@ -498,26 +505,28 @@ void ExibeRelatorios(int qtdFinalizados, TpFilaTerminado * FilaT){
 	int bloq=0,prontos=0,i=11;
 	TpProcesso p;
 	double medioBloq=0;
-	quadrado(1,1,80,25,14);
-	gotoxy(30,2);
+	//quadrado(1,1,80,25,14);
+	Bordas(1,1,120,50,MAGENTA);
+	textcolor(WHITE);
+	gotoxy(48,2);
 	printf("RELATORIOS FINAIS");
-	gotoxy(2,6);
+	gotoxy(5,6);
 	printf("Quantidade de processos finalizados : %d", qtdFinalizados);
 	contaBloq(FilaT,bloq,medioBloq);
-	gotoxy(2,7);
+	gotoxy(5,7);
 	printf("Quantidade de processos bloqueados : %d", bloq);
-	gotoxy(2,8);
+	gotoxy(5,8);
 	printf("Media de tempo bloqueado : %.2lf", medioBloq);
 	qntPronto(FilaT,prontos);
-	gotoxy(2,9);
+	gotoxy(5,9);
 	printf("Processos entre Execucao e Pronto : %d", prontos);
-	gotoxy(2,10);
+	gotoxy(5,10);
 	printf("Relatorios individuais : ");
 	while(!isEmptyTerminado(FilaT)){
 		FilaT = dequeueTerminado(FilaT,p);
-		gotoxy(2,i++);
+		gotoxy(5,i++); 
 		printf("PID : %d Tempo Total de Execucao: %d",p.pid,p.tTotal);
-		gotoxy(2,i++);
+		gotoxy(5,i++);
 		printf("QTD de Filhos: %d , Tempo Bloqueado Pelos Filhos: %d", p.qtdFilhos,p.tBloqueadoFilho);
 	}
 }
@@ -541,7 +550,6 @@ int main()
 	system("cls");
 	FilaT = Execucao(FilaP,FilaE,FilaT,pids,i);
 	fflush(stdin);
-	getch();
 	ExibeRelatorios(i,FilaT);
-	gotoxy(1,26);
+	gotoxy(1,55);
 }

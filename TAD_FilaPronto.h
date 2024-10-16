@@ -1,3 +1,5 @@
+#define TFP 10
+
 struct TpProcesso
 {
 	int qtdFilhos, tRestante, tCPU,tBloqueado, tTotal, prior, tBloqueadoFilho;
@@ -14,6 +16,24 @@ struct TpFilaPronto
 TpFilaPronto *InitPronto()
 {
 	return NULL;
+}
+
+void ExibirPronto(TpFilaPronto *f[TFP], int x, int y){
+	int i;
+	TpFilaPronto *aux;
+	for(i=TFP-1;i>=0;i--,y+=2){
+		aux= f[i];
+		gotoxy(x,y);
+		if(aux!=NULL){
+			textcolor(i+1);
+			printf("%c  ",1);
+			aux=aux->prox;
+		}	
+		while(aux!=f[i]){
+			printf("%c  ",1);
+			aux = aux ->prox;
+		}
+	}
 }
 
 TpFilaPronto *novoProcessoPronto(TpProcesso processo)
